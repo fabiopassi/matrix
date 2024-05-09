@@ -12,10 +12,13 @@
 
 /* Global variables */
 int quit = 0;
-const int num_color_pairs = 6;
-const int len_color = 2;
 
-#define LEN_STRING 12       /* This must be equal to num_color_pairs * len_color  */
+
+/* Constants */
+#define NUM_COL_PAIRS 6
+#define LEN_COLOR 2
+#define LEN_STRING 12
+
 
 /* Typedef */
 
@@ -107,13 +110,13 @@ void move_string(MyString* string) {
 void print_string(MyString* string, int y_max) {
     for (int i = 0; i < LEN_STRING; i++) {
         
-        attron(COLOR_PAIR(i/len_color + 1));
+        attron(COLOR_PAIR(i/LEN_COLOR + 1));
 
         if (string->chars[i].y >= 0 && string->chars[i].y <= y_max) {
             mvprintw(string->chars[i].y, string->chars[i].x, "%c", string->chars[i].c);
         }
 
-        attroff(COLOR_PAIR(i/len_color + 1));
+        attroff(COLOR_PAIR(i/LEN_COLOR + 1));
 
         if ( i == LEN_STRING - 1 && string->chars[i].y >= 1 && string->chars[i].y <= y_max + 1 ) {
             mvaddch(string->chars[i].y - 1, string->chars[i].x, ' ');
@@ -129,8 +132,7 @@ int main(int argc, char** argv) {
 
     srand(time(NULL));
 
-    /* Colors and ncurses settings */
-
+    /* ncurses settings and colors (many greens and white) */
     initscr();
 
     nodelay(stdscr, TRUE);
@@ -164,13 +166,19 @@ int main(int argc, char** argv) {
 
     /* Getting terminal info */
     int x_max, y_max;
-    char available_chars[] = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890+-.,:;/!?^$&()=[]{}@#*";        /* Hard coding magic */
-    int num_avail_chars = strlen(available_chars);
-    int new_strings_per_cycle = 6;
-    Node* head = NULL;
-
     getmaxyx(stdscr, y_max, x_max);
 
+    /* Settings for characters contained in strings and new number of strings per iterations */
+    char available_chars[] = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890+-.,:;/!?^$&()=[]{}@#*";
+    int num_avail_chars = strlen(available_chars);
+    const int new_strings_per_cycle = 6;
+    enum Boolean {False, True};
+    enum Boolean remove = False;
+
+    /* Define the head of the linked list containing out strings */
+    Node* head = NULL;
+
+    /* In case of ^C, the handler function is called and the program leaves the while loop below */
     signal(SIGINT, handler);
 
     while (! quit) {
@@ -192,13 +200,23 @@ int main(int argc, char** argv) {
 
             tmp = tmp->next;
         }
+        /* Moving and printing the last element */
         move_string(&(tmp->val));
         print_string(&(tmp->val), y_max);
 
- 
+        /* If I am not already removing the elements (because no string scrolled the whole screen), then I check if any string has now scrolled the whole screen */
+        if ( remove == False && tmp->val.chars[LEN_STRING-1].y > y_max ) {
+            remove = True;
+        }
+
         /* Print on stdscr and wait */
         refresh();
         napms(80);
+
+        /* Remove the elements outside of the screen */
+        for (int i = 0; remove == True && i < new_strings_per_cycle; i++) {
+            remove_last_element(&head);
+        }
 
         /* Check for quit */
         int key = getch();

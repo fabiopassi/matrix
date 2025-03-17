@@ -138,6 +138,7 @@ int main(int argc, char** argv) {
     nodelay(stdscr, TRUE);
     noecho();
     curs_set(0);
+    use_default_colors();
 
     if (! has_colors() == TRUE) {
         printf("Your terminal does not support colors.\n\n");

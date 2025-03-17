@@ -151,18 +151,20 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    /* Colors : different shades of green */
     init_color(27, 0, 900, 0);
     init_color(28, 40, 800, 30);
     init_color(29, 50, 666, 50);
     init_color(30, 100, 400, 100);
     init_color(31, 183, 308, 183);
 
-    init_pair(1, COLOR_WHITE, COLOR_BLACK);
-    init_pair(2, 27, COLOR_BLACK);
-    init_pair(3, 28, COLOR_BLACK);
-    init_pair(4, 29, COLOR_BLACK);
-    init_pair(5, 30, COLOR_BLACK);  
-    init_pair(6, 31, COLOR_BLACK);
+    /* Color pairs (NOTE: -1 is default bkg) */
+    init_pair(1, COLOR_WHITE, -1);
+    init_pair(2, 27, -1);
+    init_pair(3, 28, -1);
+    init_pair(4, 29, -1);
+    init_pair(5, 30, -1);  
+    init_pair(6, 31, -1);
 
     /* Getting terminal info */
     int x_max, y_max;
